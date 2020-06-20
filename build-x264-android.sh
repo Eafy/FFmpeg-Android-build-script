@@ -11,6 +11,10 @@ LAST_VERSION=$2
 ANDROID_API=$3
 NDK=$4
 
+if [ ! "$COMP_BUILD" ]
+then
+COMP_BUILD="all"
+fi
 #需要编译的Android API版本
 if [ ! "$ANDROID_API" ]
 then
@@ -21,6 +25,12 @@ if [ ! "$NDK" ]
 then
 NDK=/Users/lzj/Library/Android/sdk/ndk-bundle
 fi
+if [ ! "$LAST_VERSION" ]
+then
+LAST_VERSION=last
+fi
+echo COMP_BUILD=$COMP_BUILD
+echo LAST_VERSION=$LAST_VERSION
 echo ANDROID_API=$ANDROID_API
 echo NDK=$NDK
 
@@ -32,6 +42,7 @@ TRIPLES_PATH=(arm-linux-androideabi-4.9 aarch64-linux-android-4.9 x86-4.9 x86_64
 FF_CONFIGURE_FLAGS="--enable-static --enable-pic --disable-cli"
 #FF_CONFIGURE_FLAGS="--enable-shared --enable-pic --disable-cli"
 
+#rm -rf "$PREFIX"
 #rm -rf "$SOURCE"
 if [ ! -r $SOURCE ]
 then
@@ -61,7 +72,7 @@ do
     CROSS_PREFIX=$TOOLCHAIN/bin/${TRIPLES[$i]}-
     PREFIX_ARCH=$PREFIX/$ARCH
 
-    if [ "$COMP_BUILD" = "" -o "$COMP_BUILD" = "$ARCH" ]
+    if [ "$COMP_BUILD" = "all" -o "$COMP_BUILD" = "$ARCH" ]
         then
         if [ "$ARCH" = "arm" ]
         then

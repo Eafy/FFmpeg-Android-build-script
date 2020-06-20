@@ -14,6 +14,11 @@ ANDROID_API=21
 #需要编译的NDK路径，NDK版本需大等于r15c
 NDK=/Users/lzj/Library/Android/sdk/ndk-bundle
 
+if [ ! "$COMP_BUILD" ]
+then
+COMP_BUILD="all"
+fi
+
 #x264库路径
 x264=$SHELL_PATH/x264_android
 if [ "$x264" ] && [[ $FF_VERSION == 3.0.* ]] || [[ $FF_VERSION == 3.1.* ]]
@@ -33,7 +38,8 @@ TRIPLES_PATH=(arm-linux-androideabi-4.9 aarch64-linux-android-4.9 x86-4.9 x86_64
 
 FF_CONFIGURE_FLAGS="--enable-static --disable-shared --enable-pic --enable-gpl --enable-postproc --disable-stripping --enable-small --enable-version3 --enable-jni --enable-mediacodec --enable-decoder=h264_mediacodec --enable-hwaccel=h264_mediacodec --enable-decoder=hevc_mediacodec --enable-decoder=mpeg4_mediacodec --enable-decoder=vp8_mediacodec --enable-decoder=vp9_mediacodec"
 
-rm -rf "$SOURCE"
+#rm -rf "$PREFIX"
+#rm -rf "$SOURCE"
 if [ ! -r $SOURCE ]
 then
     if [ ! -f "$SOURCE.tar.bz2" ]
@@ -62,7 +68,7 @@ do
     CROSS_PREFIX=$TOOLCHAIN/bin/${TRIPLES[$i]}-
     PREFIX_ARCH=$PREFIX/$ARCH
 
-    if [ "$COMP_BUILD" = "" -o "$COMP_BUILD" = "$ARCH" ]
+    if [ "$COMP_BUILD" = "all" -o "$COMP_BUILD" = "$ARCH" ]
     then
         if [ "$ARCH" = "arm" ]
         then
@@ -107,6 +113,10 @@ do
         continue
     fi
     FF_CFLAGS="-I$ASM -isysroot $ISYSROOT -D__ANDROID_API__=$ANDROID_API -U_FILE_OFFSET_BITS -O3 -pipe -Wall -ffast-math -fstrict-aliasing -Werror=strict-aliasing -Wno-psabi -Wa,--noexecstack -DANDROID"
+
+    echo FF_EXTRA_CONFIGURE_FLAGS=$FF_EXTRA_CONFIGURE_FLAGS
+    echo FF_EXTRA_CFLAGS=$FF_EXTRA_CFLAGS
+    echo FF_LDFLAGS=$FF_LDFLAGS
 
     ./configure \
     --prefix=$PREFIX_ARCH \
