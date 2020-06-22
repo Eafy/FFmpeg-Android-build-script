@@ -1,0 +1,12 @@
+--- a/ffmpeg/configure
++++ b/ffmpeg/configure
+@@ -4209,7 +4209,8 @@
+ 
+ set_default target_os
+ if test "$target_os" = android; then
+-    cc_default="clang"
++#    cc_default="clang"
++    cc_default="gcc"  #lzj fixed
+ fi
+ 
+ ar_default="${cross_prefix}${ar_default}"
