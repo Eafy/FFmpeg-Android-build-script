@@ -7,33 +7,50 @@ SHELL_PATH=`pwd`
 FF_PATH=$SHELL_PATH/$SOURCE
 #输出路径
 PREFIX=$SHELL_PATH/FFmpeg_android
+#需要编译的平台
 COMP_BUILD=$1
+#是否重新编译其他库
+COMP_OTHER=$2
+ANDROID_API=$3
+NDK=$4
+
+#需要编译的NDK路径，NDK版本需大等于r15c
+if [ ! "$ANDROID_API" ]
+then
+NDK=/Users/lzj/Library/Android/sdk/ndk-bundle
+fi
 
 #需要编译的Android API版本
+if [ ! "$ANDROID_API" ]
+then
 ANDROID_API=21
-#需要编译的NDK路径，NDK版本需大等于r15c
-NDK=/Users/lzj/Library/Android/sdk/ndk-bundle
-
+fi
 if [ ! "$COMP_BUILD" ]
 then
 COMP_BUILD="all"
 fi
 
 #x264库路径
+if [ "$COMP_OTHER" = "x264" ] || [ "$COMP_OTHER" = "all" ]
+then
 x264=$SHELL_PATH/x264_android
 if [ "$x264" ] && [[ $FF_VERSION == 3.0.* ]] || [[ $FF_VERSION == 3.1.* ]]
 then
 echo "Use low version x264"
-sh $SHELL_PATH/build-x264-android.sh $COMP_BUILD
+sh $SHELL_PATH/build-x264-android.sh $COMP_BUILD low $ANDROID_API $NDK
 elif [ "$x264" ]
 then
 echo "Use last version x264"
-#sh $SHELL_PATH/build-x264-android.sh $COMP_BUILD last $ANDROID_API $NDK
+sh $SHELL_PATH/build-x264-android.sh $COMP_BUILD last $ANDROID_API $NDK
+fi
 fi
 
 #OpenSSL库路径
+if [ "$COMP_OTHER" = "openssl" ] || [ "$COMP_OTHER" = "all" ]
+then
 OpenSSL=$SHELL_PATH/openssl_android
-#sh $SHELL_PATH/build-openssl-android.sh $COMP_BUILD
+sh $SHELL_PATH/build-openssl-android.sh $COMP_BUILD $ANDROID_API $NDK
+fi
 
 #需要编译的平台:arm arm64 x86 x86_64，可传入平台单独编译对应的库
 ARCHS=(arm arm64 x86 x86_64)
@@ -44,7 +61,7 @@ FF_CONFIGURE_FLAGS="--enable-static --disable-shared --disable-encoders --disabl
 FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --enable-mediacodec --enable-decoder=h264_mediacodec  --enable-decoder=hevc_mediacodec --enable-decoder=mpeg4_mediacodec --enable-decoder=vp8_mediacodec --enable-decoder=vp9_mediacodec"
 FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --enable-encoder=h264,aac --enable-decoder=h264,aac --enable-muxer=h264,aac,flv --enable-demuxer=h264,aac,flv --enable-parser=h264,aac --disable-protocol=rtp --disable-protocol=sctp --disable-protocol=ftp --disable-protocol=hls --disable-protocol=concat --disable-protocol=icecast --disable-bsfs --enable-bsf=aac_adtstoasc --enable-bsf=h264_mp4toannexb --enable-bsf=null --enable-bsf=noise"
 
-rm -rf "$PREFIX"
+#rm -rf "$PREFIX"
 #rm -rf "$SOURCE"
 if [ ! -r $SOURCE ]
 then
@@ -121,6 +138,7 @@ do
         then
             export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${OpenSSL}/${ARCHS[$i]}$TRMP_P/lib/pkgconfig
             FF_EXTRA_CONFIGURE_FLAGS="$FF_EXTRA_CONFIGURE_FLAGS --enable-openssl --pkg-config=pkg-config"
+#            FF_EXTRA_CONFIGURE_FLAGS="$FF_EXTRA_CONFIGURE_FLAGS --enable-openssl"
             FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$OpenSSL/${ARCHS[$i]}$TRMP_P/include"
             FF_LDFLAGS="$FF_LDFLAGS -L$OpenSSL/${ARCHS[$i]}$TRMP_P/lib"
         else

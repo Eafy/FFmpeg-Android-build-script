@@ -42,7 +42,7 @@ TRIPLES_PATH=(arm-linux-androideabi-4.9 aarch64-linux-android-4.9 x86-4.9 x86_64
 FF_FLAGS="--enable-static --enable-pic --disable-cli"
 #FF_FLAGS="--enable-shared --enable-pic --disable-cli"
 
-rm -rf "$PREFIX"
+#rm -rf "$PREFIX"
 #rm -rf "$SOURCE"
 if [ ! -r $SOURCE ]
 then

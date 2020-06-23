@@ -1,7 +1,7 @@
 #!/bin/bash
 #https://www.openssl.org/source/openssl-1.1.1d.tar.gz
 
-OPENSSL_VERSION="1.1.1d"
+OPENSSL_VERSION="1.1.1f"
 SOURCE="openssl-$OPENSSL_VERSION"
 SHELL_PATH=`pwd`
 OPENSSL_PATH=$SHELL_PATH/$SOURCE
@@ -37,7 +37,7 @@ TRIPLES_PATH=(arm-linux-androideabi-4.9 aarch64-linux-android-4.9 x86-4.9 x86_64
 #FF_CONFIGURE_FLAGS="-D__ANDROID_API__=$ANDROID_API no-ssl2 no-ssl3 no-comp no-hw no-engine"
 FF_CONFIGURE_FLAGS="-D__ANDROID_API__=$ANDROID_API no-engine"
 
-rm -rf "$PREFIX"
+#rm -rf "$PREFIX"
 #rm -rf "$SOURCE"
 if [ ! -r $SOURCE ]
 then
@@ -62,7 +62,8 @@ do
     CC=gcc
     echo PATH=$PATH
     if [ "$COMP_BUILD" = "all" -o "$COMP_BUILD" = "$ARCH" ]
-        then
+    then
+        TRMP_P=""
         if [ "$ARCH" = "arm" ]
         then
             TRMP_P="eabi-v7a"
@@ -95,6 +96,7 @@ do
     $FF_FLAGS || exit 1
     make -j3 && make -j3 install || exit 1
     make clean
+    rm -rf "$PREFIX_ARCH/share" "$PREFIX_ARCH/bin" "$PREFIX_ARCH/ssl"
 #    if [[ $FF_FLAGS == *no-shared* ]]
 #    then
 #        mv $PREFIX_ARCH/lib/libcrypto.so.* $PREFIX_ARCH/lib/libcrypto.so
