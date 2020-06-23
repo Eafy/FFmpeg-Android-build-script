@@ -1,4 +1,5 @@
 #!/bin/bash
+#如果需要编译API 21以下，对应的x264等需要编译对应的版本
 
 #需要编译FFpmeg版本号
 FF_VERSION="3.4.2"
@@ -69,7 +70,8 @@ do
     PREFIX_ARCH=$PREFIX/$ARCH
 
     if [ "$COMP_BUILD" = "all" -o "$COMP_BUILD" = "$ARCH" ]
-    then
+        then
+        TRMP_P=""
         if [ "$ARCH" = "arm" ]
         then
             FF_EXTRA_CONFIGURE_FLAGS="--disable-asm"

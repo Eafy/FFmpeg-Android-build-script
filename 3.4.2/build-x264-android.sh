@@ -39,11 +39,11 @@ ARCHS=(arm arm64 x86 x86_64)
 TRIPLES=(arm-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android)
 TRIPLES_PATH=(arm-linux-androideabi-4.9 aarch64-linux-android-4.9 x86-4.9 x86_64-4.9)
 
-FF_CONFIGURE_FLAGS="--enable-static --enable-pic --disable-cli"
-#FF_CONFIGURE_FLAGS="--enable-shared --enable-pic --disable-cli"
+FF_FLAGS="--enable-static --enable-pic --disable-cli"
+#FF_FLAGS="--enable-shared --enable-pic --disable-cli"
 
-#rm -rf "$PREFIX"
-#rm -rf "$SOURCE"
+rm -rf "$PREFIX"
+rm -rf "$SOURCE"
 if [ ! -r $SOURCE ]
 then
     if [ "$LAST_VERSION" ] && [ $ANDROID_API -ge 21 ]
@@ -78,7 +78,7 @@ do
         then
             TRMP_P="eabi-v7a"
             PREFIX_ARCH="$PREFIX_ARCH$TRMP_P"
-            FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-asm"
+            FF_CONFIGURE_FLAGS="$FF_FLAGS --disable-asm"
         elif [ "$ARCH" = "arm64" ]
         then
             if [ $ANDROID_API -lt 21 ]
@@ -87,13 +87,13 @@ do
             else
                 TRMP_P="-v8a"
                 PREFIX_ARCH="$PREFIX_ARCH$TRMP_P"
-                FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS"
+                FF_CONFIGURE_FLAGS="$FF_FLAGS"
             fi
         elif [ "$ARCH" = "x86_64" -a $ANDROID_API -lt 21 ]
         then
             continue
         else
-            FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-asm"
+            FF_CONFIGURE_FLAGS="$FF_FLAGS --disable-asm"
         fi
     else
         continue
@@ -112,7 +112,6 @@ do
     $ADDITIONAL_CONFIGURE_FLAG || exit 1
     make -j3 install || exit 1
     make distclean
-    rm -rf "$PREFIX_ARCH/lib/pkgconfig"
     if [[ $FF_CONFIGURE_FLAGS == *--enable-shared* ]]
     then
         mv $PREFIX_ARCH/lib/libx264.so.* $PREFIX_ARCH/lib/libx264.so
