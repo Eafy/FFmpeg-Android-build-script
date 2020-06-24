@@ -15,15 +15,18 @@ ANDROID_API=$3
 NDK=$4
 
 #需要编译的NDK路径，NDK版本需大等于r15c
-if [ ! "$ANDROID_API" ]
+if [ ! "$NDK" ]
 then
 NDK=/Users/lzj/Library/Android/sdk/ndk-bundle
 fi
-
 #需要编译的Android API版本
 if [ ! "$ANDROID_API" ]
 then
 ANDROID_API=21
+fi
+if [ ! "$COMP_OTHER" ]
+then
+COMP_OTHER="all"
 fi
 if [ ! "$COMP_BUILD" ]
 then
@@ -57,9 +60,18 @@ ARCHS=(arm arm64 x86 x86_64)
 TRIPLES=(arm-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android)
 TRIPLES_PATH=(arm-linux-androideabi-4.9 aarch64-linux-android-4.9 x86-4.9 x86_64-4.9)
 
-FF_CONFIGURE_FLAGS="--enable-static --disable-shared --disable-encoders --disable-decoders --disable-demuxers --disable-muxers --disable-parsers --disable-filters --enable-avfilter --disable-indevs --disable-outdevs --enable-hwaccels --enable-postproc --enable-pic --enable-nonfree --enable-gpl --disable-stripping --enable-small --enable-version3 --enable-jni"
-FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --enable-mediacodec --enable-decoder=h264_mediacodec  --enable-decoder=hevc_mediacodec --enable-decoder=mpeg4_mediacodec --enable-decoder=vp8_mediacodec --enable-decoder=vp9_mediacodec"
-FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --enable-encoder=h264,aac --enable-decoder=h264,aac --enable-muxer=h264,aac,flv --enable-demuxer=h264,aac,flv --enable-parser=h264,aac --disable-protocol=rtp --disable-protocol=sctp --disable-protocol=ftp --disable-protocol=hls --disable-protocol=concat --disable-protocol=icecast --disable-bsfs --enable-bsf=aac_adtstoasc --enable-bsf=h264_mp4toannexb --enable-bsf=null --enable-bsf=noise"
+FF_CONFIGURE_FLAGS="--enable-static --disable-shared --disable-indevs --disable-outdevs --enable-pic --enable-nonfree --enable-gpl --disable-stripping --enable-small --enable-version3 --enable-jni"
+
+FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --enable-hwaccels --enable-postproc"
+FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-encoders --enable-encoder=h264,aac,mpeg*"
+#FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-decoders --enable-decoder=h264,aac,mpeg*"
+FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --enable-mediacodec --enable-decoder=h264_mediacodec,hevc_mediacodec,mpeg4_mediacodec,vp8_mediacodec,vp9_mediacodec"
+FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-muxers --enable-muxer=h264,aac,pcm_*,flv,mp4,avi,rtsp"
+#FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-demuxers --enable-demuxer=mp4,h264,aac,avi,flv,rtsp,hls,*mpeg*,pcm_*"
+FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-parsers --enable-parser=h264,aac,*jpeg*,mpeg*"
+#FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-protocol=sctp,ftp,concat,icecast"
+FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-bsfs --enable-bsf=aac_adtstoasc --enable-bsf=h264_mp4toannexb --enable-bsf=null --enable-bsf=noise"
+FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-filters --enable-avfilter --enable-filter=anull"
 
 #rm -rf "$PREFIX"
 #rm -rf "$SOURCE"
@@ -152,6 +164,7 @@ do
     echo FF_EXTRA_CFLAGS=$FF_EXTRA_CFLAGS
     echo FF_LDFLAGS=$FF_LDFLAGS
     echo FF_CONFIGURE_FLAGS=$FF_CONFIGURE_FLAGS
+    echo FF_EXTRA_CONFIGURE_FLAGS=$FF_EXTRA_CONFIGURE_FLAGS
 
     ./configure \
     --prefix=$PREFIX_ARCH \
