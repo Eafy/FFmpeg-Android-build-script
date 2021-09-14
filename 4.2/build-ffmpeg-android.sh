@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#···············支持的平台·第三方库·Andoird API·NDK路径
+#./build-ffmpeg-android.sh all all 21 /Users/lzj/Library/Android/sdk/ndk-bundle
+
 #需要编译FFpmeg版本号
 FF_VERSION="4.2"
 SOURCE="ffmpeg-$FF_VERSION"
@@ -64,12 +67,10 @@ FF_CONFIGURE_FLAGS="--enable-static --disable-shared --disable-indevs --disable-
 
 FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --enable-hwaccels --enable-postproc"
 FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-encoders --enable-encoder=h264,aac,mpeg*"
-#FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-decoders --enable-decoder=h264,aac,mpeg*"
 FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --enable-mediacodec --enable-decoder=h264_mediacodec,hevc_mediacodec,mpeg4_mediacodec,vp8_mediacodec,vp9_mediacodec"
 FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-muxers --enable-muxer=h264,aac,pcm_*,flv,mp4,avi,rtsp"
 #FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-demuxers --enable-demuxer=mp4,h264,aac,avi,flv,rtsp,hls,*mpeg*,pcm_*"
 FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-parsers --enable-parser=h264,aac,*jpeg*,mpeg*"
-#FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-protocol=sctp,ftp,concat,icecast"
 FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-bsfs --enable-bsf=aac_adtstoasc --enable-bsf=h264_mp4toannexb --enable-bsf=null --enable-bsf=noise"
 FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-filters --enable-avfilter --enable-filter=anull"
 
