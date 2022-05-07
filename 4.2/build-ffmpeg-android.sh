@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #···············支持的平台·第三方库·Andoird API·NDK路径
-#./build-ffmpeg-android.sh all all 21 /Users/lzj/Library/Android/sdk/ndk-bundle
+#./build-ffmpeg-android.sh all all yes 21 /Users/lzj/Library/Android/sdk/ndk-bundle
 
 #需要编译FFpmeg版本号
 FF_VERSION="4.2"
@@ -9,13 +9,17 @@ SOURCE="ffmpeg-$FF_VERSION"
 SHELL_PATH=`pwd`
 FF_PATH=$SHELL_PATH/$SOURCE
 #输出路径
-PREFIX=$SHELL_PATH/FFmpeg_android
+PREFIX=$SHELL_PATH/ffmpeg-android
 #需要编译的平台
 COMP_BUILD=$1
 #是否重新编译其他库
 COMP_OTHER=$2
-ANDROID_API=$3
-NDK=$4
+#是否重新编译第三方库
+BUILD_THIRD_LIB_COMPILE=$3
+#API版本
+ANDROID_API=$4
+#NDK版本
+NDK=$5
 
 #需要编译的NDK路径，NDK版本需大等于r15c
 if [ ! "$NDK" ]
@@ -35,44 +39,57 @@ if [ ! "$COMP_BUILD" ]
 then
 COMP_BUILD="all"
 fi
+if [ ! "$BUILD_THIRD_LIB_COMPILE" ]
+then
+BUILD_THIRD_LIB_COMPILE="yes"
+fi
 
 #x264库路径
 if [ "$COMP_OTHER" = "x264" ] || [ "$COMP_OTHER" = "all" ]
 then
-x264=$SHELL_PATH/x264_android
-if [ "$x264" ] && [[ $FF_VERSION == 3.0.* ]] || [[ $FF_VERSION == 3.1.* ]]
-then
-echo "Use low version x264"
-sh $SHELL_PATH/build-x264-android.sh $COMP_BUILD low $ANDROID_API $NDK
-elif [ "$x264" ]
-then
-echo "Use last version x264"
-sh $SHELL_PATH/build-x264-android.sh $COMP_BUILD last $ANDROID_API $NDK
-fi
+    x264=$SHELL_PATH/x264-android
+    if [ "$BUILD_THIRD_LIB_COMPILE" = "yes" ]    #是否重新编译x264的库
+    then
+        if [ "$x264" ] && [[ $FF_VERSION == 3.0.* ]] || [[ $FF_VERSION == 3.1.* ]]
+        then
+            echo "Use low version x264"
+            sh $SHELL_PATH/build-x264-android.sh $COMP_BUILD low $ANDROID_API $NDK
+        elif [ "$x264" ]
+        then
+            echo "Use last version x264"
+        sh $SHELL_PATH/build-x264-android.sh $COMP_BUILD last $ANDROID_API $NDK
+        fi
+    fi
 fi
 
-#OpenSSL库路径
+#OpenSSL库路径,需要手动下载openssl源码包
 if [ "$COMP_OTHER" = "openssl" ] || [ "$COMP_OTHER" = "all" ]
 then
-OpenSSL=$SHELL_PATH/openssl_android
-sh $SHELL_PATH/build-openssl-android.sh $COMP_BUILD $ANDROID_API $NDK
+OpenSSL=$SHELL_PATH/openssl-android
+    if [ "$BUILD_THIRD_LIB_COMPILE" = "yes" ]    #是否重新编译x264的库
+    then
+        sh $SHELL_PATH/build-openssl-android.sh $COMP_BUILD $ANDROID_API $NDK
+    fi
 fi
+
+#是否编译opencore-amr
+OPENCORE_AMR=$SHELL_PATH/opencore-amr-android
 
 #需要编译的平台:arm arm64 x86 x86_64，可传入平台单独编译对应的库
 ARCHS=(arm arm64 x86 x86_64)
 TRIPLES=(arm-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android)
 TRIPLES_PATH=(arm-linux-androideabi-4.9 aarch64-linux-android-4.9 x86-4.9 x86_64-4.9)
 
-FF_CONFIGURE_FLAGS="--enable-static --disable-shared --disable-indevs --disable-outdevs --enable-pic --enable-nonfree --enable-gpl --disable-stripping --enable-small --enable-version3 --enable-jni"
+FF_CONFIGURE_FLAGS="--enable-static --disable-shared --disable-indevs --disable-outdevs --enable-pic --enable-nonfree --enable-gpl --disable-stripping --enable-small --enable-version3 --enable-jni --enable-pthreads --enable-mediacodec --enable-hwaccels --enable-postproc"
 
-FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --enable-hwaccels --enable-postproc"
-FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-encoders --enable-encoder=h264,aac,mpeg*"
-FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --enable-mediacodec --enable-decoder=h264_mediacodec,hevc_mediacodec,mpeg4_mediacodec,vp8_mediacodec,vp9_mediacodec"
-FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-muxers --enable-muxer=h264,aac,pcm_*,flv,mp4,avi,rtsp"
-#FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-demuxers --enable-demuxer=mp4,h264,aac,avi,flv,rtsp,hls,*mpeg*,pcm_*"
-FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-parsers --enable-parser=h264,aac,*jpeg*,mpeg*"
-FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-bsfs --enable-bsf=aac_adtstoasc --enable-bsf=h264_mp4toannexb --enable-bsf=null --enable-bsf=noise"
-FF_CONFIGURE_FLAGS="$FF_CONFIGURE_FLAGS --disable-filters --enable-avfilter --enable-filter=anull"
+CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-encoders --disable-decoders \
+--disable-muxers --disable-parsers --disable-filters \
+--enable-encoder=h264,aac,libx264,pcm_*,*jpeg* \
+--enable-decoder=h264,aac,pcm*,*jpeg*,amr*,hevc,h264_mediacodec,hevc_mediacodec,mpeg4_mediacodec,vp8_mediacodec,vp9_mediacodec \
+--enable-muxer=h264,aac,pcm*,flv,mp4,avi,mp3,amr \
+--enable-parser=h264,aac,hevc,mpeg4video,*jpeg*,mpeg* \
+--enable-avfilter --enable-filter=anull"
+#--disable-demuxers --enable-demuxer=h264,aac,hevc,pcm*,flv,hls,mp3,avi,hls,amr*,mpeg* \
 
 #rm -rf "$PREFIX"
 #rm -rf "$SOURCE"
@@ -143,8 +160,6 @@ do
             FF_EXTRA_CONFIGURE_FLAGS="$FF_EXTRA_CONFIGURE_FLAGS --enable-libx264 --enable-encoder=libx264"
             FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$x264/${ARCHS[$i]}$TRMP_P/include"
             FF_LDFLAGS="$FF_LDFLAGS -L$x264/${ARCHS[$i]}$TRMP_P/lib"
-        else
-            FF_LDFLAGS="$FF_LDFLAGS"
         fi
 
         if [ "$OpenSSL" ]
@@ -154,8 +169,13 @@ do
 #            FF_EXTRA_CONFIGURE_FLAGS="$FF_EXTRA_CONFIGURE_FLAGS --enable-openssl"
             FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$OpenSSL/${ARCHS[$i]}$TRMP_P/include"
             FF_LDFLAGS="$FF_LDFLAGS -L$OpenSSL/${ARCHS[$i]}$TRMP_P/lib"
-        else
-            FF_LDFLAGS="$FF_LDFLAGS"
+        fi
+        
+        if [ "$OPENCORE_AMR" ]
+        then
+            FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$OPENCORE_AMR/${ARCHS[$i]}$TRMP_P/include"
+            FF_LDFLAGS="$FF_LDFLAGS -L$OPENCORE_AMR/${ARCHS[$i]}$TRMP_P/lib"
+            FF_EXTRA_CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-encoder=libopencore_amrnb"
         fi
     else
         continue

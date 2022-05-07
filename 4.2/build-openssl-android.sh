@@ -1,12 +1,12 @@
 #!/bin/bash
-#https://www.openssl.org/source/openssl-1.1.1d.tar.gz
+#https://www.openssl.org/source/openssl-1.1.1f.tar.gz
 
 OPENSSL_VERSION="1.1.1f"
 SOURCE="openssl-$OPENSSL_VERSION"
 SHELL_PATH=`pwd`
 OPENSSL_PATH=$SHELL_PATH/$SOURCE
 #输出路径
-PREFIX=$SHELL_PATH/openssl_android
+PREFIX=$SHELL_PATH/openssl-android
 COMP_BUILD=$1
 ANDROID_API=$2
 NDK=$3
@@ -58,7 +58,7 @@ do
     PREFIX_ARCH=$PREFIX/$ARCH
 
     export ANDROID_NDK=$NDK
-    export PATH=$NDK/toolchains/${TRIPLES_PATH[$i]}/prebuilt/darwin-x86_64//bin:$PATH
+    export PATH=$NDK/toolchains/${TRIPLES_PATH[$i]}/prebuilt/darwin-x86_64/bin:$PATH
     CC=gcc
     echo PATH=$PATH
     if [ "$COMP_BUILD" = "all" -o "$COMP_BUILD" = "$ARCH" ]
