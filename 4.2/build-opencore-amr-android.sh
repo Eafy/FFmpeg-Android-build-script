@@ -66,14 +66,24 @@ do
     fi
     
     ARCH=${ARCHS[$i]}
-    TOOLCHAIN=$NDK/toolchains/${TRIPLES_PATH[$i]}/prebuilt/darwin-x86_64
+    TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/darwin-x86_64
     SYSROOT=$NDK/platforms/android-$ANDROID_API/arch-$ARCH/
     ISYSROOT=$NDK/sysroot
     ASM=$ISYSROOT/usr/include/${TRIPLES[$i]}
     CROSS_PREFIX=$TOOLCHAIN/bin/${TRIPLES[$i]}
     PREFIX_ARCH=$PREFIX/$ARCH$TRMP_P
+    
+    CFLAGS="-I$ASM -isysroot $ISYSROOT -D__ANDROID_API__=$ANDROID_API -U_FILE_OFFSET_BITS -DANDROID -fPIC"
+    LDFLAGS="-L$NDK/sysroot/user/${TRIPLES_PATH[$i]} -L$SYSROOT/usr/lib"
 
-    CFLAGS="-I${ISYSROOT}/usr/include -I$ASM" RANLIB=${CROSS_PREFIX}-ranlib CC=${CROSS_PREFIX}-gcc CXX=${CROSS_PREFIX}-g++ LD=${CROSS_PREFIX}-ld CPP=${CROSS_PREFIX}-cpp LDFLAGS="-L${SYSROOT}usr/lib/ -fPIC -nostdlib -I${ISYSROOT}/usr/include -I$ASM" ./configure --host=${TRIPLES[$i]} --disable-shared --with-sysroot=${SYSROOT}
+#    CFLAGS="-I${ISYSROOT}/usr/include -I$ASM" RANLIB=${CROSS_PREFIX}-ranlib CC=${CROSS_PREFIX}-gcc CXX=${CROSS_PREFIX}-g++ LD=${CROSS_PREFIX}-ld CPP=${CROSS_PREFIX}-cpp LDFLAGS="-L${SYSROOT}usr/lib/ -fPIC -nostdlib -I${ISYSROOT}/usr/include -I$ASM" .
+    
+    /configure \
+    --host=${TRIPLES[$i]} \
+    --disable-shared \
+    --with-sysroot=${SYSROOT}
+    
+    
     make -j3 || exit
     make install || exit
     

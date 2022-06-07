@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#···············支持的平台·第三方库·Andoird API·NDK路径
+#···············支持的平台·第三方库·是否重新编译第三方库·Andoird API·NDK路径
 #./build-ffmpeg-android.sh all all yes 21 /Users/lzj/Library/Android/sdk/ndk-bundle
 
 #需要编译FFpmeg版本号
@@ -75,6 +75,9 @@ fi
 #是否编译opencore-amr
 OPENCORE_AMR=$SHELL_PATH/opencore-amr-android
 
+#是否编译speex
+#SPEEX=$SHELL_PATH/speex-android
+
 #需要编译的平台:arm arm64 x86 x86_64，可传入平台单独编译对应的库
 ARCHS=(arm arm64 x86 x86_64)
 TRIPLES=(arm-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android)
@@ -86,7 +89,7 @@ CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-encoders --disable-decoders \
 --disable-muxers --disable-parsers --disable-filters \
 --enable-encoder=h264,aac,libx264,pcm_*,*jpeg* \
 --enable-decoder=h264,aac,pcm*,*jpeg*,amr*,hevc,h264_mediacodec,hevc_mediacodec,mpeg4_mediacodec,vp8_mediacodec,vp9_mediacodec \
---enable-muxer=h264,aac,pcm*,flv,mp4,avi,mp3,amr \
+--enable-muxer=h264,aac,pcm*,flv,mp4,avi,mp3 \
 --enable-parser=h264,aac,hevc,mpeg4video,*jpeg*,mpeg* \
 --enable-avfilter --enable-filter=anull"
 #--disable-demuxers --enable-demuxer=h264,aac,hevc,pcm*,flv,hls,mp3,avi,hls,amr*,mpeg* \
@@ -127,7 +130,7 @@ do
         if [ "$ARCH" = "arm" ]
         then
             FF_EXTRA_CONFIGURE_FLAGS="--disable-asm"
-            FF_EXTRA_CFLAGS="-fpic -ffunction-sections -funwind-tables -fstack-protector -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=300"
+            FF_EXTRA_CFLAGS="-fPIC -ffunction-sections -funwind-tables -fstack-protector -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=300"
             TRMP_P="eabi-v7a"
             PREFIX_ARCH="$PREFIX_ARCH$TRMP_P"
         elif [ "$ARCH" = "arm64" ]
@@ -137,19 +140,17 @@ do
                 continue
             else
             FF_EXTRA_CONFIGURE_FLAGS=""
-            FF_EXTRA_CFLAGS="-fpic"
+            FF_EXTRA_CFLAGS="-fPIC"
             TRMP_P="-v8a"
             PREFIX_ARCH="$PREFIX_ARCH$TRMP_P"
             fi
         elif [ "$ARCH" = "x86" -o "$ARCH" = "x86_64" ]
         then
-            if [ "$ARCH" = "x86_64" -a $ANDROID_API -lt 21 ]
+            if [ "$ARCH" = "x86" -o "$ARCH" = "x86_64" ]
             then
-                continue
-            else
                 FF_EXTRA_CONFIGURE_FLAGS="--disable-asm"
-                FF_EXTRA_CFLAGS="-fpic -Dipv6mr_interface=ipv6mr_ifindex -fasm -Wno-psabi -fno-short-enums -fno-strict-aliasing -fomit-frame-pointer -march=k8"
             fi
+            FF_EXTRA_CFLAGS="-fPIC -Dipv6mr_interface=ipv6mr_ifindex -fasm -Wno-psabi -fno-short-enums -fno-strict-aliasing -fomit-frame-pointer -march=k8"
         else
             echo "Unrecognized arch:$ARCH"
             exit 1
@@ -157,25 +158,34 @@ do
 
         if [ "$x264" ]
         then
-            FF_EXTRA_CONFIGURE_FLAGS="$FF_EXTRA_CONFIGURE_FLAGS --enable-libx264 --enable-encoder=libx264"
             FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$x264/${ARCHS[$i]}$TRMP_P/include"
             FF_LDFLAGS="$FF_LDFLAGS -L$x264/${ARCHS[$i]}$TRMP_P/lib"
+            FF_EXTRA_CONFIGURE_FLAGS="$FF_EXTRA_CONFIGURE_FLAGS --enable-libx264 --enable-encoder=libx264"
         fi
 
         if [ "$OpenSSL" ]
         then
-            export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${OpenSSL}/${ARCHS[$i]}$TRMP_P/lib/pkgconfig
-            FF_EXTRA_CONFIGURE_FLAGS="$FF_EXTRA_CONFIGURE_FLAGS --enable-openssl --pkg-config=pkg-config"
-#            FF_EXTRA_CONFIGURE_FLAGS="$FF_EXTRA_CONFIGURE_FLAGS --enable-openssl"
             FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$OpenSSL/${ARCHS[$i]}$TRMP_P/include"
             FF_LDFLAGS="$FF_LDFLAGS -L$OpenSSL/${ARCHS[$i]}$TRMP_P/lib"
+            FF_EXTRA_CONFIGURE_FLAGS="$FF_EXTRA_CONFIGURE_FLAGS --enable-openssl --pkg-config=pkg-config"
+#            export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${OpenSSL}/${ARCHS[$i]}$TRMP_P/lib/pkgconfig
         fi
         
         if [ "$OPENCORE_AMR" ]
         then
-            FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$OPENCORE_AMR/${ARCHS[$i]}$TRMP_P/include"
-            FF_LDFLAGS="$FF_LDFLAGS -L$OPENCORE_AMR/${ARCHS[$i]}$TRMP_P/lib"
-            FF_EXTRA_CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-encoder=libopencore_amrnb"
+            if [ "$ARCH" = "arm" -o "$ARCH" = "arm64" ]
+            then
+                FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$OPENCORE_AMR/${ARCHS[$i]}$TRMP_P/include"
+                FF_LDFLAGS="$FF_LDFLAGS -L$OPENCORE_AMR/${ARCHS[$i]}$TRMP_P/lib"
+                FF_EXTRA_CONFIGURE_FLAGS="$FF_EXTRA_CONFIGURE_FLAGS --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-encoder=libopencore_amrnb --enable-encoder=libopencore_amrwb --enable-muxer=amr"
+            fi
+        fi
+        
+        if [ "$SPEEX" ]
+        then
+            FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$SPEEX/${ARCHS[$i]}$TRMP_P/include"
+            FF_LDFLAGS="$FF_LDFLAGS -L$SPEEX/${ARCHS[$i]}$TRMP_P/lib"
+            FF_EXTRA_CONFIGURE_FLAGS="$FF_EXTRA_CONFIGURE_FLAGS --enable-libspeex --enable-encoder=libspeex --enable-decoder=libspeex"
         fi
     else
         continue
@@ -204,8 +214,8 @@ do
     $FF_CONFIGURE_FLAGS \
     $FF_EXTRA_CONFIGURE_FLAGS \
     --extra-cflags="$FF_EXTRA_CFLAGS $FF_CFLAGS" \
-    --extra-ldflags="$FF_LDFLAGS" \
-    $ADDITIONAL_CONFIGURE_FLAG || exit 1
+    --extra-ldflags="$FF_LDFLAGS"
+    
     make -j3 install || exit 1
     make distclean
     rm -rf "$PREFIX_ARCH/share"
