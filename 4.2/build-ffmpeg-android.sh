@@ -76,7 +76,7 @@ fi
 OPENCORE_AMR=$SHELL_PATH/opencore-amr-android
 
 #是否编译speex
-#SPEEX=$SHELL_PATH/speex-android
+SPEEX=$SHELL_PATH/speex-android
 
 #需要编译的平台:arm arm64 x86 x86_64，可传入平台单独编译对应的库
 ARCHS=(arm arm64 x86 x86_64)
@@ -173,18 +173,15 @@ do
         
         if [ "$OPENCORE_AMR" ]
         then
-            if [ "$ARCH" = "arm" -o "$ARCH" = "arm64" ]
-            then
-                FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$OPENCORE_AMR/${ARCHS[$i]}$TRMP_P/include"
-                FF_LDFLAGS="$FF_LDFLAGS -L$OPENCORE_AMR/${ARCHS[$i]}$TRMP_P/lib"
-                FF_EXTRA_CONFIGURE_FLAGS="$FF_EXTRA_CONFIGURE_FLAGS --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-encoder=libopencore_amrnb --enable-encoder=libopencore_amrwb --enable-muxer=amr"
-            fi
+            FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$OPENCORE_AMR/${ARCHS[$i]}$TRMP_P/include"
+            FF_LDFLAGS="$FF_LDFLAGS -L$OPENCORE_AMR/${ARCHS[$i]}$TRMP_P/lib"
+            FF_EXTRA_CONFIGURE_FLAGS="$FF_EXTRA_CONFIGURE_FLAGS --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-encoder=libopencore_amrnb --enable-encoder=libopencore_amrwb --enable-muxer=amr"
         fi
         
         if [ "$SPEEX" ]
         then
             FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$SPEEX/${ARCHS[$i]}$TRMP_P/include"
-            FF_LDFLAGS="$FF_LDFLAGS -L$SPEEX/${ARCHS[$i]}$TRMP_P/lib"
+            FF_LDFLAGS="$FF_LDFLAGS -lm -L$SPEEX/${ARCHS[$i]}$TRMP_P/lib"
             FF_EXTRA_CONFIGURE_FLAGS="$FF_EXTRA_CONFIGURE_FLAGS --enable-libspeex --enable-encoder=libspeex --enable-decoder=libspeex"
         fi
     else
