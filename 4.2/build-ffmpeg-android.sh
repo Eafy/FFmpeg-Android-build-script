@@ -76,7 +76,7 @@ fi
 OPENCORE_AMR=$SHELL_PATH/opencore-amr-android
 
 #是否编译speex
-SPEEX=$SHELL_PATH/speex-android
+#SPEEX=$SHELL_PATH/speex-android
 
 #需要编译的平台:arm arm64 x86 x86_64，可传入平台单独编译对应的库
 ARCHS=(arm arm64 x86 x86_64)
@@ -88,7 +88,7 @@ FF_CONFIGURE_FLAGS="--enable-static --disable-shared --disable-indevs --disable-
 CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-encoders --disable-decoders \
 --disable-muxers --disable-parsers --disable-filters \
 --enable-encoder=h264,aac,libx264,pcm_*,*jpeg* \
---enable-decoder=h264,aac,pcm*,*jpeg*,amr*,hevc,h264_mediacodec,hevc_mediacodec,mpeg4_mediacodec,vp8_mediacodec,vp9_mediacodec \
+--enable-decoder=h264,aac,pcm*,*jpeg*,amr*,hevc,h264_mediacodec,hevc_mediacodec,mpeg4_mediacodec,vp8_mediacodec,vp9_mediacodec,adpcm* \
 --enable-muxer=h264,aac,pcm*,flv,mp4,avi,mp3 \
 --enable-parser=h264,aac,hevc,mpeg4video,*jpeg*,mpeg* \
 --enable-avfilter --enable-filter=anull"
